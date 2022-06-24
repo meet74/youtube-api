@@ -10,11 +10,21 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const crypto = require('crypto');
 const db_url = require('./src/database');
+const cors=require("cors");
 
 
+
+const corsOptions ={
+    origin:'*', 
+    credentials:true,            //access-control-allow-credentials:true
+    optionSuccessStatus:200,
+ }
+ 
+ 
 
 //Middlewares
 app.use(bodyParser.json());
+app.use(cors(corsOptions)) ;
 
 //creating server
 const server = require('http').createServer(app);
@@ -29,6 +39,7 @@ let gfs;
 
 //adding one time listener
 dbConnection.once('open', () => {
+  
     gfs = Grid(dbConnection.db,mongoose.mongo);
     gfs.collection('uploads');
 })
@@ -40,8 +51,10 @@ const storage = new GridFsStorage({
     url:db_url,
     db:dbConnection,
     file:(req,file) => {
+        console.log("shreehari");
         return new Promise((res,rej) => {
             crypto.randomBytes(16,(err,buf) => {
+                console.log(file);
                 if (err) {
                     return rej(err);
                 }
@@ -60,6 +73,7 @@ const storage = new GridFsStorage({
 const uploads = multer({storage});
 
 app.post('/uploadvideo',uploads.single('file'),(req,res) => {
+    console.log(req.file);
     res.send('File uploaded');
 })
 
